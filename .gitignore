@@ -1,0 +1,41 @@
+# --- Python Artifacts ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual Environment (NEVER PUSH THIS) ---
+venv/
+env/
+.env
+
+# --- Runtime Data (Logs & Bait) ---
+logs/
+*.log
+_BAIT_FILE.txt
+backup_keys.txt
+wallet_backup.dat
+recovery_codes.txt
+master_key.txt
+_backup_codes.txt
+
+# --- Distribution & Build Files ---
+*.zip
+dist/
+build/
+*.spec
+
+# --- OS Junk ---
+.DS_Store
+Thumbs.db
+
+# --- IDE Files ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Test Files (Optional - keep if you want) ---
+# Uncomment if you don't want test files in repo
+# *.test.py
+
