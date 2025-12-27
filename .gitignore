@@ -20,8 +20,17 @@ _backup_codes.txt
 
 # --- Distribution & Build Files ---
 *.zip
-# dist/
 build/
+
+# --- Dist folder (binaries) - Ignored by default, but can be force-added if needed
+# NOTE: For academic submission, binaries are force-added using: git add -f dist/
+# This is a "student hack" to ensure lecturers can easily find the executables.
+# In production, binaries should be in GitHub Releases, not the main repo.
+# To add specific binaries: git add -f dist/RansomwareCanary.exe
+dist/
+!dist/.gitkeep
+
+# --- Spec files (auto-generated, but useful for rebuilding)
 *.spec
 
 # --- OS Junk ---

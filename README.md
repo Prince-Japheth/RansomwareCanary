@@ -96,8 +96,7 @@ To create a single executable file that doesn't require Python:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/ransomware-canary.git
-cd ransomware-canary
+git clone https://github.com/Prince-Japheth/RansomwareCanary
 
 # 2. Create a Virtual Environment (Recommended)
 python3 -m venv venv
