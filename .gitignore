@@ -20,7 +20,7 @@ _backup_codes.txt
 
 # --- Distribution & Build Files ---
 *.zip
-dist/
+# dist/
 build/
 *.spec
 
