@@ -38,7 +38,19 @@ The system operates on three core modules:
 
 **Prerequisites:** Python 3.8+
 
-### Quick Installation (Linux - One-Click Setup)
+### For End-Users (Pre-built Binary)
+
+**Option 1: Using Pre-built Release Package (Recommended)**
+
+1. Download `RansomwareCanary_Linux_App.zip`
+2. Extract the folder
+3. Open Terminal in the extracted folder
+4. Run: `sudo bash install_linux.sh`
+5. Reboot your computer
+
+The app will auto-start on boot. **No Python installation required!**
+
+**Option 2: Quick Installation from Source**
 
 For end-users who want a "set and forget" installation:
 
@@ -54,9 +66,31 @@ sudo bash install_linux.sh
 - Creates desktop icon
 - Configures auto-start on boot
 - Sets up password-less execution (no sudo prompt needed)
-- Installs dependencies automatically
+- Automatically uses binary if available, falls back to Python script
 
 After installation, **reboot your computer**. The Canary will start automatically on boot.
+
+### Building the Standalone Binary (For Developers)
+
+To create a single executable file that doesn't require Python:
+
+```bash
+# 1. Install PyInstaller
+./venv/bin/pip install pyinstaller
+
+# 2. Build the binary
+./venv/bin/pyinstaller --onefile --windowed \
+  --name="RansomwareCanary" \
+  --hidden-import=pystray \
+  --hidden-import=PIL \
+  main_gui.py
+
+# 3. The binary will be in dist/RansomwareCanary (16MB)
+# 4. Create release package
+./create_release.sh
+```
+
+**Result:** A single 16MB executable that works on any Linux system without Python installed.
 
 ### Manual Installation (For Developers/Testing)
 
@@ -198,8 +232,14 @@ This accurately simulates real ransomware behavior, unlike text editors that clo
 
 ### For Lecturers/End-Users
 
-**Linux Users:**
-1. Provide the project folder as a ZIP file (exclude `venv/`, `__pycache__/`, `logs/`)
+**Linux Users (Recommended - Pre-built Binary):**
+1. Build the release package: `./create_release.sh`
+2. Provide `RansomwareCanary_Linux_App.zip` (contains binary + installer)
+3. Users extract, run `sudo bash install_linux.sh`, and reboot
+4. **No Python required on target machine!**
+
+**Linux Users (Source Code):**
+1. Provide the project folder as a ZIP file (exclude `venv/`, `__pycache__/`, `logs/`, `dist/`, `build/`)
 2. Include `HOW_TO_RUN.txt` with instructions
 3. Users can run `sudo bash install_linux.sh` for one-click setup
 
@@ -212,15 +252,18 @@ This accurately simulates real ransomware behavior, unlike text editors that clo
 2. Provide `RansomwareCanary.exe` from `dist/` folder
 3. Include `HOW_TO_RUN.txt` with instructions
 
-**Creating Submission Package:**
+**Creating Source Code Submission Package:**
 ```bash
 # From parent directory
 cd ~/Desktop
-zip -r RansomwareCanary_Submission.zip RansomwareCanary \
+zip -r RansomwareCanary_Source.zip RansomwareCanary \
   -x "RansomwareCanary/venv/*" \
   -x "RansomwareCanary/__pycache__/*" \
   -x "RansomwareCanary/logs/*" \
-  -x "RansomwareCanary/*.pyc"
+  -x "RansomwareCanary/dist/*" \
+  -x "RansomwareCanary/build/*" \
+  -x "RansomwareCanary/*.pyc" \
+  -x "RansomwareCanary/*.spec"
 ```
 
 ## 📁 Project Structure
