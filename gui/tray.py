@@ -19,6 +19,13 @@ except ImportError:
     except ImportError:
         TKINTER_AVAILABLE = False
 
+# Try to import cairosvg for SVG support
+try:
+    import cairosvg
+    CAIROSVG_AVAILABLE = True
+except ImportError:
+    CAIROSVG_AVAILABLE = False
+
 
 class SystemTrayApp:
     """System tray application with start/stop protection controls."""
@@ -38,7 +45,7 @@ class SystemTrayApp:
     
     def create_image(self, color):
         """
-        Load shield icon from file, or generate dynamically if file not found.
+        Load shield icon from SVG file, or generate dynamically if file not found.
         
         Args:
             color: "green" for active, "red" for stopped
@@ -46,23 +53,49 @@ class SystemTrayApp:
         Returns:
             PIL Image object
         """
-        # Try to load icon from file first
-        icon_filename = f"shield_{color}.png"
+        # Map color to SVG filename
+        if color == "green":
+            svg_filename = "ShieldTick-Bold-32px.svg"
+        else:
+            svg_filename = "ShieldCross-Bold-32px.svg"
         
         # Check multiple possible locations (for PyInstaller bundled app)
         possible_paths = [
-            os.path.join(os.path.dirname(__file__), "..", "icons", icon_filename),
-            os.path.join(os.path.dirname(__file__), "icons", icon_filename),
-            os.path.join(os.getcwd(), "icons", icon_filename),
-            os.path.join(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable), "icons", icon_filename),
+            os.path.join(os.path.dirname(__file__), "..", "icons", svg_filename),
+            os.path.join(os.path.dirname(__file__), "icons", svg_filename),
+            os.path.join(os.getcwd(), "icons", svg_filename),
+            os.path.join(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable), "icons", svg_filename),
         ]
         
-        for icon_path in possible_paths:
-            icon_path = os.path.abspath(icon_path)
-            if os.path.exists(icon_path):
+        # Try to load SVG file first
+        for svg_path in possible_paths:
+            svg_path = os.path.abspath(svg_path)
+            if os.path.exists(svg_path):
                 try:
-                    return Image.open(icon_path)
-                except Exception:
+                    if CAIROSVG_AVAILABLE:
+                        # Convert SVG to PNG bytes with transparency preserved
+                        from io import BytesIO
+                        png_data = cairosvg.svg2png(
+                            url=svg_path,
+                            output_width=64,
+                            output_height=64,
+                            background_color=None  # Preserve transparency
+                        )
+                        img = Image.open(BytesIO(png_data))
+                        # Ensure RGBA mode for transparency
+                        if img.mode != 'RGBA':
+                            img = img.convert('RGBA')
+                        return img
+                    else:
+                        # Fallback: try to load as PNG if cairosvg not available
+                        # Check for PNG version
+                        png_path = svg_path.replace(".svg", ".png")
+                        if os.path.exists(png_path):
+                            img = Image.open(png_path)
+                            if img.mode != 'RGBA':
+                                img = img.convert('RGBA')
+                            return img
+                except Exception as e:
                     continue
         
         # Fallback: Generate icon dynamically if file not found
@@ -230,12 +263,44 @@ class TrayIcon:
     
     def _create_icon_image(self, color="green"):
         """
-        Create a shield icon image with the specified color.
+        Create a shield icon image from SVG file with the specified color.
         
         Args:
             color: "green" for protected, "red" for threat stopped
         """
-        # Create a shield icon
+        # Map color to SVG filename
+        if color == "green":
+            svg_filename = "ShieldTick-Bold-32px.svg"
+        else:
+            svg_filename = "ShieldCross-Bold-32px.svg"
+        
+        # Check multiple possible locations (for PyInstaller bundled app)
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), "..", "icons", svg_filename),
+            os.path.join(os.path.dirname(__file__), "icons", svg_filename),
+            os.path.join(os.getcwd(), "icons", svg_filename),
+            os.path.join(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable), "icons", svg_filename),
+        ]
+        
+        # Try to load SVG file first
+        for svg_path in possible_paths:
+            svg_path = os.path.abspath(svg_path)
+            if os.path.exists(svg_path):
+                try:
+                    if CAIROSVG_AVAILABLE:
+                        # Convert SVG to PNG bytes, then load into PIL
+                        png_data = cairosvg.svg2png(url=svg_path, output_width=64, output_height=64)
+                        from io import BytesIO
+                        return Image.open(BytesIO(png_data))
+                    else:
+                        # Fallback: try to load as PNG if cairosvg not available
+                        png_path = svg_path.replace(".svg", ".png")
+                        if os.path.exists(png_path):
+                            return Image.open(png_path)
+                except Exception:
+                    continue
+        
+        # Fallback: Generate icon dynamically if file not found
         width = height = 64
         image = Image.new('RGBA', (width, height), (0, 0, 0, 0))  # Transparent background
         draw = ImageDraw.Draw(image)
@@ -367,7 +432,7 @@ class SimpleTkinterGUI:
         
         self.status_label = tk.Label(
             status_frame,
-            text="🛡️ PROTECTED",
+            text="[*] PROTECTED",
             font=("Arial", 24, "bold"),
             bg="green",
             fg="white"
@@ -407,7 +472,7 @@ class SimpleTkinterGUI:
         
         if status == "threat_stopped":
             self.status_label.config(
-                text="⚡ ATTACK STOPPED!",
+                text="[*] ATTACK STOPPED!",
                 bg="red"
             )
             self.status_label.master.config(bg="red")
@@ -420,7 +485,7 @@ class SimpleTkinterGUI:
             )
         else:
             self.status_label.config(
-                text="🛡️ PROTECTED",
+                text="[*] PROTECTED",
                 bg="green"
             )
             self.status_label.master.config(bg="green")

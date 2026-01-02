@@ -79,6 +79,7 @@ Exec=$LAUNCHER_ABS
 Icon=security-high
 Terminal=false
 Categories=Utility;Security;
+X-GNOME-Autostart-enabled=true
 EOF
 
 # Make it executable
@@ -94,13 +95,33 @@ sudo -u $CURRENT_USER update-desktop-database /home/$CURRENT_USER/.local/share/a
 echo "[*] Adding to Startup Applications..."
 
 mkdir -p /home/$CURRENT_USER/.config/autostart
-cp /home/$CURRENT_USER/.local/share/applications/RansomwareCanary.desktop /home/$CURRENT_USER/.config/autostart/
+
+# Create autostart desktop file with proper settings
+cat <<EOF > /home/$CURRENT_USER/.config/autostart/RansomwareCanary.desktop
+[Desktop Entry]
+Type=Application
+Name=Ransomware Canary
+Comment=Active Defense System - Zero-Infrastructure Endpoint Protection
+Exec=$LAUNCHER_ABS
+Icon=security-high
+Terminal=false
+Categories=Utility;Security;
+X-GNOME-Autostart-enabled=true
+Hidden=false
+NoDisplay=false
+EOF
 
 # CRITICAL: Change ownership of autostart file to user
 chown $CURRENT_USER:$CURRENT_USER /home/$CURRENT_USER/.config/autostart/RansomwareCanary.desktop
 
+# Make it executable
+chmod +x /home/$CURRENT_USER/.config/autostart/RansomwareCanary.desktop
+
+# Trust the autostart file
+sudo -u $CURRENT_USER gio set /home/$CURRENT_USER/.config/autostart/RansomwareCanary.desktop metadata::trusted true 2>/dev/null || true
+
 echo "====================================================="
-echo "✅ INSTALLATION COMPLETE."
+echo "[+] INSTALLATION COMPLETE."
 echo ""
 if [ "$USE_BINARY" = true ]; then
     echo "The app is installed as a standalone binary (no Python required)."

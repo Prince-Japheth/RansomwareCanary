@@ -68,10 +68,10 @@ def main():
     is_admin = check_permissions()
     if not is_admin:
         print("=" * 60)
-        print("⚠️  WARNING: Not running as Root/Administrator")
-        print("⚠️  You may not have permission to kill processes")
-        print("⚠️  On Linux, run with: sudo python3 main.py")
-        print("⚠️  On Windows, run as Administrator")
+        print("[!] WARNING: Not running as Root/Administrator")
+        print("[!] You may not have permission to kill processes")
+        print("[!] On Linux, run with: sudo python3 main.py")
+        print("[!] On Windows, run as Administrator")
         print("=" * 60)
         response = input("Continue anyway? (y/N): ")
         if response.lower() != 'y':
@@ -120,11 +120,11 @@ def main():
     # Main loop
     try:
         print("\n" + "=" * 60)
-        print("🛡️  RANSOMWARE CANARY ACTIVE")
+        print("[*] RANSOMWARE CANARY ACTIVE")
         print("=" * 60)
         print(f"Monitoring: {watch_dir}")
         print(f"Bait files: {', '.join(os.path.basename(f) for f in bait_files)}")
-        print("\n💡 Try opening and modifying a bait file to test the system!")
+        print("\n[*] Try opening and modifying a bait file to test the system!")
         print("Press Ctrl+C to stop\n")
         
         while True:

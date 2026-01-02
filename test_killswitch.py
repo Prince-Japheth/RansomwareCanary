@@ -27,7 +27,7 @@ class RansomwareKiller(FileSystemEventHandler):
             self.terminate_process()
 
     def terminate_process(self):
-        print("[⚡] ACTIVE DEFENSE TRIGGERED")
+        print("[*] ACTIVE DEFENSE TRIGGERED")
         
         # Scan for any process holding the bait file open
         for proc in psutil.process_iter(['pid', 'name', 'open_files']):

@@ -21,7 +21,7 @@ mkdir -p "$RELEASE_DIR"
 # Check for binaries
 if [ ! -f "dist/RansomwareCanary" ]; then
     echo "[-] ERROR: Linux binary not found!"
-    echo "[-] Build it first: ./venv/bin/pyinstaller --onefile --windowed --name=\"RansomwareCanary\" --hidden-import=pystray --hidden-import=PIL --add-data \"icons:icons\" main_gui.py"
+    echo "[-] Build it first: ./venv/bin/pyinstaller --onefile --windowed --name=\"RansomwareCanary\" --hidden-import=pystray --hidden-import=PIL --hidden-import=cairosvg --add-data \"icons:icons\" main_gui.py"
     exit 1
 fi
 
@@ -42,6 +42,7 @@ cp uninstall_linux.sh "$LINUX_DIR/"
 cp launcher.sh "$LINUX_DIR/"
 cp README.md "$LINUX_DIR/"
 cp HOW_TO_RUN.txt "$LINUX_DIR/"
+cp -r icons "$LINUX_DIR/" 2>/dev/null || true
 
 chmod +x "$LINUX_DIR/RansomwareCanary"
 chmod +x "$LINUX_DIR/install_linux.sh"
@@ -64,6 +65,7 @@ if [ -f "dist/RansomwareCanary.exe" ]; then
     cp install_windows.bat "$WINDOWS_DIR/"
     cp README.md "$WINDOWS_DIR/"
     cp HOW_TO_RUN.txt "$WINDOWS_DIR/"
+    cp -r icons "$WINDOWS_DIR/" 2>/dev/null || true
     
     # Create Windows zip
     cd "$RELEASE_DIR"
@@ -88,7 +90,7 @@ cd RansomwareCanary
 
 echo ""
 echo "====================================================="
-echo "✅ Release packages created in: $RELEASE_DIR/"
+echo "[+] Release packages created in: $RELEASE_DIR/"
 echo "====================================================="
 echo ""
 echo "Files ready for GitHub Release:"

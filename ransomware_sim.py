@@ -24,8 +24,8 @@ def attack():
         print(f"[i] Make sure the Canary is running and has created the bait file.")
         return
 
-    print(f"[☠️] MALWARE STARTED. Targeting: {TARGET}")
-    print(f"[☠️] Opening file and holding it...")
+    print(f"[X] MALWARE STARTED. Targeting: {TARGET}")
+    print(f"[X] Opening file and holding it...")
     
     try:
         # We open the file and KEEP IT OPEN to simulate encryption time
@@ -33,12 +33,12 @@ def attack():
             f.write("\nMALWARE_WAS_HERE")
             f.flush()  # Force write to disk to trigger the Canary
             
-            print("[☠️] File modified. Waiting for encryption (simulating 10s)...")
+            print("[X] File modified. Waiting for encryption (simulating 10s)...")
             # This sleep forces the process to hold the file handle open
             # This gives your Canary time to find and kill us.
             for i in range(10):
                 time.sleep(1)
-                print(f"[☠️] Encrypting chunk {i+1}...")
+                print(f"[X] Encrypting chunk {i+1}...")
                 
         print("[-] ATTACK SUCCESSFUL. (If you see this, the Canary FAILED).")
         

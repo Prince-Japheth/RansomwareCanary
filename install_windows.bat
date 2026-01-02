@@ -34,9 +34,9 @@ mkdir "%START_MENU%\RansomwareCanary" 2>nul
 
 powershell -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU%\RansomwareCanary\Ransomware Canary.lnk'); $Shortcut.TargetPath = '%APP_DIR%\dist\RansomwareCanary.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%\dist'; $Shortcut.Description = 'Active Defense System - Zero-Infrastructure Endpoint Protection'; $Shortcut.Save()"
 
-REM Create auto-start shortcut
+REM Create auto-start shortcut with admin privileges
 echo [*] Adding to Startup folder...
-powershell -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%STARTUP%\RansomwareCanary.lnk'); $Shortcut.TargetPath = '%APP_DIR%\dist\RansomwareCanary.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%\dist'; $Shortcut.Description = 'Ransomware Canary - Auto-start'; $Shortcut.Save()"
+powershell -Command "$WshShell = New-Object -ComObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%STARTUP%\RansomwareCanary.lnk'); $Shortcut.TargetPath = '%APP_DIR%\dist\RansomwareCanary.exe'; $Shortcut.WorkingDirectory = '%APP_DIR%\dist'; $Shortcut.Description = 'Ransomware Canary - Auto-start'; $Shortcut.Save(); $bytes = [System.IO.File]::ReadAllBytes('%STARTUP%\RansomwareCanary.lnk'); $bytes[0x15] = $bytes[0x15] -bor 0x20; [System.IO.File]::WriteAllBytes('%STARTUP%\RansomwareCanary.lnk', $bytes)"
 
 echo.
 echo =====================================================
