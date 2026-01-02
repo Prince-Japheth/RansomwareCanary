@@ -8,11 +8,12 @@ Prerequisites:
 WINDOWS INSTRUCTIONS
 ==========================================
 
-OPTION 1: Using Pre-built Executable (If Available)
+OPTION 1: Using Pre-built Executable (Recommended)
 ----------------------------------------------------
-1. Double-click RansomwareCanary.exe
-2. Look for the system tray icon (bottom-right corner)
-3. Right-click the icon → "Start Protection"
+1. Run the installer: Double-click install_windows.bat (as Administrator)
+   OR manually: Double-click RansomwareCanary.exe
+2. Look for the green shield icon in system tray (bottom-right corner)
+3. Protection starts automatically - no need to click "Start"
 4. To test: Open Command Prompt and run: python ransomware_sim.py
 
 OPTION 2: Running from Source
@@ -22,13 +23,15 @@ OPTION 2: Running from Source
    pip install -r requirements.txt
 3. Run the App (Run as Administrator to allow process termination):
    python main_gui.py
-4. To Test:
+4. Protection starts automatically - green shield icon appears in system tray
+5. To Test:
    Open another terminal and run: python ransomware_sim.py
 
 Auto-Start Setup (Windows):
-- Press Win + R, type: shell:startup
-- Copy a shortcut to RansomwareCanary.exe (or main_gui.py) into that folder
-- Right-click the shortcut → Properties → Compatibility → Check "Run as administrator"
+- Use the installer: Run install_windows.bat as Administrator
+- OR manually: Press Win + R, type: shell:startup
+  Copy a shortcut to RansomwareCanary.exe into that folder
+  Right-click shortcut → Properties → Compatibility → Check "Run as administrator"
 
 ==========================================
 LINUX INSTRUCTIONS
@@ -40,7 +43,8 @@ OPTION 1: One-Click Installation (Recommended)
 2. Run the installer:
    sudo bash install_linux.sh
 3. Reboot your computer
-4. The app will auto-start on boot (look for icon in system tray)
+4. The app will auto-start on boot (look for green shield icon in system tray)
+5. Protection is active immediately - no manual start needed
 
 OPTION 2: Manual Setup
 -----------------------
@@ -68,7 +72,7 @@ IMPORTANT: Do NOT test with a text editor. Text editors close files too quickly.
 
 Use the ransomware simulator instead:
 1. Start the Canary (see instructions above)
-2. Click "Start Protection" in the system tray menu
+2. Protection starts automatically (green shield icon = active)
 3. In a separate terminal, run: python3 ransomware_sim.py (Linux) or python ransomware_sim.py (Windows)
 4. The simulator should be terminated immediately
 5. Check the Canary terminal/logs to see "THREAT NEUTRALIZED"

@@ -34,11 +34,11 @@ class SystemTrayApp:
         self.start_callback = start_callback
         self.stop_callback = stop_callback
         self.icon = None
-        self.running = False
+        self.running = True  # Auto-start protection by default
     
     def create_image(self, color):
         """
-        Generate a simple shield icon dynamically.
+        Load shield icon from file, or generate dynamically if file not found.
         
         Args:
             color: "green" for active, "red" for stopped
@@ -46,22 +46,56 @@ class SystemTrayApp:
         Returns:
             PIL Image object
         """
-        # Generate a simple shield icon dynamically
+        # Try to load icon from file first
+        icon_filename = f"shield_{color}.png"
+        
+        # Check multiple possible locations (for PyInstaller bundled app)
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), "..", "icons", icon_filename),
+            os.path.join(os.path.dirname(__file__), "icons", icon_filename),
+            os.path.join(os.getcwd(), "icons", icon_filename),
+            os.path.join(sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable), "icons", icon_filename),
+        ]
+        
+        for icon_path in possible_paths:
+            icon_path = os.path.abspath(icon_path)
+            if os.path.exists(icon_path):
+                try:
+                    return Image.open(icon_path)
+                except Exception:
+                    continue
+        
+        # Fallback: Generate icon dynamically if file not found
         width = 64
         height = 64
-        image = Image.new('RGB', (width, height), (255, 255, 255))
+        image = Image.new('RGBA', (width, height), (0, 0, 0, 0))  # Transparent background
         dc = ImageDraw.Draw(image)
         
-        # Draw a dark background (shield-ish)
-        dc.rectangle((0, 0, width, height), fill=(30, 30, 30))
-        
-        # Draw colored circle
+        # Define shield color
         if color == "green":
-            fill_color = (0, 255, 0)  # Green = Active/Protected
+            fill_color = (0, 200, 0)  # Green = Active/Protected
+            outline_color = (0, 150, 0)  # Darker green outline
         else:
-            fill_color = (255, 0, 0)  # Red = Stopped
+            fill_color = (200, 0, 0)  # Red = Stopped
+            outline_color = (150, 0, 0)  # Darker red outline
         
-        dc.ellipse((10, 10, 54, 54), fill=fill_color)
+        # Draw shield shape (rounded top, pointed bottom)
+        shield_points = [
+            (width // 2, 8),           # Top center
+            (width - 12, 12),          # Top right
+            (width - 8, 20),            # Upper right
+            (width - 8, height - 16),  # Lower right
+            (width // 2, height - 4),  # Bottom point
+            (8, height - 16),          # Lower left
+            (8, 20),                    # Upper left
+            (12, 12),                   # Top left
+        ]
+        
+        # Draw the shield with fill and outline
+        dc.polygon(shield_points, fill=fill_color, outline=outline_color, width=2)
+        
+        # Draw rounded top arc for more realistic shield look
+        dc.arc([8, 8, width - 8, 24], start=0, end=180, fill=outline_color, width=2)
         
         return image
     
@@ -102,34 +136,76 @@ class SystemTrayApp:
             self.start_callback()
             return
         
-        # Define the menu
-        menu = pystray.Menu(
-            pystray.MenuItem(
-                "Start Protection",
-                self.on_clicked,
-                checked=lambda item: self.running,
-                default=True if not self.running else False
-            ),
-            pystray.MenuItem(
-                "Stop Protection",
-                self.on_clicked,
-                checked=lambda item: not self.running,
-                default=True if self.running else False
-            ),
-            pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Exit", self.on_clicked)
-        )
-        
-        # Create icon with initial red (stopped) state
-        self.icon = pystray.Icon(
-            "Ransomware Canary",
-            self.create_image("red"),
-            "Ransomware Canary: STOPPED",
-            menu
-        )
-        
-        # Run the icon (this blocks)
-        self.icon.run()
+        # Try to create and run the system tray icon
+        # If it fails (e.g., Gnome without AppIndicator extension), fall back to console mode
+        try:
+            # Define the menu
+            menu = pystray.Menu(
+                pystray.MenuItem(
+                    "Start Protection",
+                    self.on_clicked,
+                    checked=lambda item: self.running,
+                    default=True if not self.running else False
+                ),
+                pystray.MenuItem(
+                    "Stop Protection",
+                    self.on_clicked,
+                    checked=lambda item: not self.running,
+                    default=True if self.running else False
+                ),
+                pystray.Menu.SEPARATOR,
+                pystray.MenuItem("Exit", self.on_clicked)
+            )
+            
+            # Create icon with initial green (active) state - auto-start protection
+            self.icon = pystray.Icon(
+                "Ransomware Canary",
+                self.create_image("green"),
+                "Ransomware Canary: ACTIVE",
+                menu
+            )
+            
+            # Auto-start protection immediately
+            self.start_callback()
+            
+            # Suppress pystray error logging temporarily
+            import logging
+            pystray_logger = logging.getLogger('pystray')
+            original_level = pystray_logger.level
+            pystray_logger.setLevel(logging.CRITICAL)
+            
+            # Run the icon in a thread to detect failures
+            icon_thread = threading.Thread(target=self.icon.run, daemon=True)
+            icon_thread.start()
+            
+            # Give it a moment to see if it fails
+            import time
+            time.sleep(0.5)
+            
+            # Check if thread is still alive (if AssertionError happened, it might have died)
+            if not icon_thread.is_alive():
+                raise AssertionError("System tray icon failed to initialize")
+            
+            # If we get here, icon is running - wait for it
+            icon_thread.join()
+            
+        except (AssertionError, Exception) as e:
+            # System tray failed (common on Gnome without AppIndicator extension)
+            print("[-] WARNING: System tray icon unavailable")
+            print("[-] This is common on Gnome - system tray requires AppIndicator extension")
+            print("[-] Falling back to console mode...")
+            print("[+] Protection will still work - monitoring in background")
+            print("[+] Press Ctrl+C to stop")
+            # Start protection automatically in console mode
+            self.start_callback()
+            # Keep running (wait for Ctrl+C)
+            try:
+                import time
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                self.stop_callback()
+                sys.exit(0)
 
 
 class TrayIcon:
@@ -154,29 +230,41 @@ class TrayIcon:
     
     def _create_icon_image(self, color="green"):
         """
-        Create an icon image with the specified color.
+        Create a shield icon image with the specified color.
         
         Args:
             color: "green" for protected, "red" for threat stopped
         """
-        # Create a simple colored circle icon
+        # Create a shield icon
         width = height = 64
-        image = Image.new('RGB', (width, height), color='white')
+        image = Image.new('RGBA', (width, height), (0, 0, 0, 0))  # Transparent background
         draw = ImageDraw.Draw(image)
         
+        # Define shield color
         if color == "green":
-            fill_color = (0, 255, 0)  # Green
+            fill_color = (0, 200, 0)  # Green
+            outline_color = (0, 150, 0)  # Darker green outline
         else:
-            fill_color = (255, 0, 0)  # Red
+            fill_color = (200, 0, 0)  # Red
+            outline_color = (150, 0, 0)  # Darker red outline
         
-        # Draw a circle
-        margin = 8
-        draw.ellipse(
-            [margin, margin, width - margin, height - margin],
-            fill=fill_color,
-            outline=(0, 0, 0),
-            width=2
-        )
+        # Draw shield shape (rounded top, pointed bottom)
+        shield_points = [
+            (width // 2, 8),           # Top center
+            (width - 12, 12),          # Top right
+            (width - 8, 20),            # Upper right
+            (width - 8, height - 16),  # Lower right
+            (width // 2, height - 4),  # Bottom point
+            (8, height - 16),          # Lower left
+            (8, 20),                    # Upper left
+            (12, 12),                   # Top left
+        ]
+        
+        # Draw the shield with fill and outline
+        draw.polygon(shield_points, fill=fill_color, outline=outline_color, width=2)
+        
+        # Draw rounded top arc for more realistic shield look
+        draw.arc([8, 8, width - 8, 24], start=0, end=180, fill=outline_color, width=2)
         
         return image
     

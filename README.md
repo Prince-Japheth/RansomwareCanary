@@ -36,30 +36,63 @@ The system operates on three core modules:
 
 ## 📦 Installation
 
-**Prerequisites:** Python 3.8+
+### 🚀 Quick Start (Recommended - Pre-built Binaries)
 
-### For End-Users (Pre-built Binary)
+**Download the latest release from [GitHub Releases](https://github.com/Prince-Japheth/RansomwareCanary/releases):**
 
-**Option 1: Using Pre-built Release Package (Recommended)**
-
-1. Download `RansomwareCanary_Linux_App.zip`
+#### Linux Users:
+1. Download `RansomwareCanary_Linux_vX.X.X.zip` from Releases
 2. Extract the folder
 3. Open Terminal in the extracted folder
 4. Run: `sudo bash install_linux.sh`
 5. Reboot your computer
+6. Look for green shield icon in system tray (protection auto-starts)
 
-The app will auto-start on boot. **No Python installation required!**
+**No Python required!** The binary is self-contained.
 
-**Option 2: Quick Installation from Source**
+#### Windows Users:
+1. Download `RansomwareCanary_Windows_vX.X.X.zip` from Releases
+2. Extract the folder
+3. Right-click `install_windows.bat` → Run as Administrator
+4. App appears in Start Menu and auto-starts on boot
+5. Look for green shield icon in system tray
 
-For end-users who want a "set and forget" installation:
+**No Python required!** The .exe is self-contained.
+
+### 📥 Alternative: Install from Source
+
+**Prerequisites:** Python 3.8+
+
+**For Linux (from source):**
 
 ```bash
-# 1. Extract the project folder
+# 1. Clone the repository
+git clone https://github.com/Prince-Japheth/RansomwareCanary.git
 cd RansomwareCanary
 
-# 2. Run the installer (requires sudo)
+# 2. Create virtual environment (optional but recommended)
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Run the installer (requires sudo)
 sudo bash install_linux.sh
+```
+
+**For Windows (from source):**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Prince-Japheth/RansomwareCanary.git
+cd RansomwareCanary
+
+# 2. Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Run the app
+python main_gui.py
 ```
 
 **What this does:**
@@ -227,29 +260,45 @@ The `ransomware_sim.py` script:
 
 This accurately simulates real ransomware behavior, unlike text editors that close files too quickly.
 
-## 📦 Distribution & Submission
+## 📦 Creating GitHub Releases
 
-### For Lecturers/End-Users
+### For Maintainers/Developers
 
-**Linux Users (Recommended - Pre-built Binary):**
-1. Build the release package: `./create_release.sh`
-2. Provide `RansomwareCanary_Linux_App.zip` (contains binary + installer)
-3. Users extract, run `sudo bash install_linux.sh`, and reboot
-4. **No Python required on target machine!**
+To create a new release for distribution:
 
-**Linux Users (Source Code):**
-1. Provide the project folder as a ZIP file (exclude `venv/`, `__pycache__/`, `logs/`, `dist/`, `build/`)
-2. Include `HOW_TO_RUN.txt` with instructions
-3. Users can run `sudo bash install_linux.sh` for one-click setup
-
-**Windows Users:**
-1. Build executable using PyInstaller (on Windows machine):
+1. **Build the binaries:**
    ```bash
-   pip install pyinstaller
-   pyinstaller --onefile --windowed --name="RansomwareCanary" --hidden-import=pystray --hidden-import=PIL main_gui.py
+   # Linux
+   ./venv/bin/pyinstaller --onefile --windowed \
+     --name="RansomwareCanary" \
+     --hidden-import=pystray --hidden-import=PIL \
+     --add-data "icons:icons" \
+     main_gui.py
+   
+   # Windows (on Windows machine or with Wine)
+   pyinstaller --onefile --windowed \
+     --name="RansomwareCanary" \
+     --icon="icons/shield.ico" \
+     --hidden-import=pystray --hidden-import=PIL \
+     --add-data "icons;icons" \
+     main_gui.py
    ```
-2. Provide `RansomwareCanary.exe` from `dist/` folder
-3. Include `HOW_TO_RUN.txt` with instructions
+
+2. **Prepare release packages:**
+   ```bash
+   ./prepare_release.sh v1.0.0
+   ```
+   This creates release packages in `release_v1.0.0/` folder.
+
+3. **Create GitHub Release:**
+   - Go to: https://github.com/Prince-Japheth/RansomwareCanary/releases/new
+   - Tag: `v1.0.0` (must match version in script)
+   - Title: `Release v1.0.0`
+   - Upload all `.zip` files from `release_v1.0.0/`
+   - Copy release notes from `RELEASE_NOTES_TEMPLATE.md`
+   - Publish release
+
+Users can then download directly from the Releases page!
 
 **Creating Source Code Submission Package:**
 ```bash
