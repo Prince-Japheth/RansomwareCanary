@@ -1,0 +1,389 @@
+# Ransomware Canary: Heuristic Active Defense System
+
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)
+![Language](https://img.shields.io/badge/Language-Python%203.8+-yellow)
+![Category](https://img.shields.io/badge/Category-Endpoint%20Security-red)
+
+## 🛡️ Overview
+
+**Ransomware Canary** is a zero-infrastructure, behavioral detection agent designed to intercept and neutralize ransomware attacks in real-time. 
+
+Unlike traditional antivirus solutions that rely on signature updates (which fail against zero-day threats), this system utilizes **Deception Technology**. It deploys invisible "honeyfiles" (bait) into critical user directories and monitors them for unauthorized modification.
+
+When a process attempts to encrypt or modify a bait file, the generic kernel-level monitoring system triggers an immediate **Active Defense Response**, terminating the hostile process ID (PID) before it can damage actual user data.
+
+## 🚀 Key Features
+
+* **Behavioral Detection:** Detects ransomware based on *action* (mass encryption), not file signatures.
+
+* **Active Defense:** Instantly sends a `SIGKILL` / `Terminate` signal to the offending process.
+
+* **Zero-Infrastructure:** Runs entirely on the local endpoint. No cloud servers, internet connection, or subscriptions required. Perfect for air-gapped or low-bandwidth environments (e.g., Nigerian SMEs).
+
+* **Cross-Platform:** Compatible with Linux (Ubuntu/Debian), Windows, and macOS.
+
+* **System Tray Integration:** Silent background operation with a visual status indicator.
+
+## ⚙️ Technical Architecture
+
+The system operates on three core modules:
+
+1.  **The Watcher (`watchdog`):** Hooks into the OS file system events (using `inotify` on Linux or `ReadDirectoryChangesW` on Windows) to monitor bait files with microsecond latency.
+
+2.  **The Hunter (`psutil`):** When a "Modified" event is detected on a bait file, this module performs a reverse-lookup to identify the specific Process ID (PID) holding the file handle.
+
+3.  **The Enforcer:** Executes an immediate termination command on the identified PID.
+
+## 📦 Installation
+
+### 🚀 Quick Start (Recommended - Pre-built Binaries)
+
+**Download the latest release from [GitHub Releases](https://github.com/Prince-Japheth/RansomwareCanary/releases):**
+
+#### Linux Users:
+1. Download `RansomwareCanary_Linux_vX.X.X.zip` from Releases
+2. Extract the folder
+3. Open Terminal in the extracted folder
+4. Run: `sudo bash install_linux.sh`
+5. Reboot your computer
+6. Look for green shield icon in system tray (protection auto-starts)
+
+**No Python required!** The binary is self-contained.
+
+#### Windows Users:
+1. Download `RansomwareCanary_Windows_vX.X.X.zip` from Releases
+2. Extract the folder
+3. Right-click `install_windows.bat` → Run as Administrator
+4. App appears in Start Menu and auto-starts on boot
+5. Look for green shield icon in system tray
+
+**No Python required!** The .exe is self-contained.
+
+### 📥 Alternative: Install from Source
+
+**Prerequisites:** Python 3.8+
+
+**For Linux (from source):**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Prince-Japheth/RansomwareCanary.git
+cd RansomwareCanary
+
+# 2. Create virtual environment (optional but recommended)
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Run the installer (requires sudo)
+sudo bash install_linux.sh
+```
+
+**For Windows (from source):**
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Prince-Japheth/RansomwareCanary.git
+cd RansomwareCanary
+
+# 2. Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Run the app
+python main_gui.py
+```
+
+**What this does:**
+- Creates desktop icon
+- Configures auto-start on boot
+- Sets up password-less execution (no sudo prompt needed)
+- Automatically uses binary if available, falls back to Python script
+
+After installation, **reboot your computer**. The Canary will start automatically on boot.
+
+### Building the Standalone Binary (For Developers)
+
+To create a single executable file that doesn't require Python:
+
+```bash
+# 1. Install PyInstaller
+./venv/bin/pip install pyinstaller
+
+# 2. Build the binary
+./venv/bin/pyinstaller --onefile --windowed \
+  --name="RansomwareCanary" \
+  --hidden-import=pystray \
+  --hidden-import=PIL \
+  main_gui.py
+
+# 3. The binary will be in dist/RansomwareCanary (16MB)
+# 4. Create release package
+./create_release.sh
+```
+
+**Result:** A single 16MB executable that works on any Linux system without Python installed.
+
+### Manual Installation (For Developers/Testing)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Prince-Japheth/RansomwareCanary
+
+# 2. Create a Virtual Environment (Recommended)
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
+
+# 3. Install Dependencies
+pip install -r requirements.txt
+
+# 4. For Linux system tray support (if tray icon doesn't appear)
+sudo apt install libayatana-appindicator3-dev
+```
+
+### Windows Installation
+
+**Option 1: Pre-built Executable (If Available)**
+- Double-click `RansomwareCanary.exe`
+- Look for system tray icon (bottom-right)
+- Right-click → "Start Protection"
+
+**Option 2: From Source**
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run as Administrator
+python main_gui.py
+```
+
+**Auto-Start Setup (Windows):**
+- Press `Win + R`, type: `shell:startup`
+- Copy shortcut to `RansomwareCanary.exe` (or `main_gui.py`) into that folder
+- Right-click shortcut → Properties → Compatibility → Check "Run as administrator"
+
+## 🖥️ Usage
+
+### GUI Mode (Recommended)
+
+**After Installation (Linux):**
+- The app will auto-start on boot
+- Look for the system tray icon (top-right corner)
+- **Left-click** the icon to see menu: "Start Protection", "Stop Protection", "Exit"
+
+**Manual Start (Linux):**
+```bash
+sudo python3 main_gui.py
+```
+
+**Windows:**
+```bash
+# Run as Administrator
+python main_gui.py
+```
+
+**System Tray Icon:**
+- **Red dot** = Protection stopped
+- **Green dot** = Protection active
+- **Left-click** (Ubuntu/Gnome) or **Right-click** (Windows) to open menu
+
+### Console Mode
+
+Monitor the current directory with default bait file:
+```bash
+sudo python3 main.py
+```
+
+### Advanced Options
+
+```bash
+# Monitor a specific directory
+sudo python3 main.py --watch-dir /home/user/Documents
+
+# Create all standard bait files
+sudo python3 main.py --all-bait
+
+# Run without GUI (console mode)
+sudo python3 main.py --no-gui
+
+# Specify a custom bait file
+sudo python3 main.py --bait-file my_secret_file.txt
+```
+
+## 🧪 Testing the System
+
+### ⚠️ Important: Why Text Editors Don't Work
+
+**Text editors (gedit, nano, VS Code) perform a "hit-and-run":** They open, write, and close files in microseconds—too fast for detection.
+
+**Real ransomware performs a "grab-and-hold":** It opens files and holds them open while encrypting, giving the Canary time to detect and kill it.
+
+**Therefore, you must test with the ransomware simulator, not a text editor.**
+
+### Proper Testing Method
+
+1. **Start the Canary** (in Terminal 1):
+   ```bash
+   sudo python3 main_gui.py
+   ```
+   Or use the full system:
+   ```bash
+   sudo python3 main.py
+   ```
+
+2. **Fix file permissions** (if needed):
+   Since the Canary runs as root, the bait file may be root-owned. In Terminal 2:
+   ```bash
+   sudo chmod 666 _BAIT_FILE.txt
+   ```
+
+3. **Run the Ransomware Simulator** (in Terminal 2):
+   ```bash
+   python3 ransomware_sim.py
+   ```
+
+4. **Expected Result**:
+   - The simulator will print `[☠️] File modified...`
+   - The Canary terminal will show `[⚡] ACTIVE DEFENSE TRIGGERED`
+   - The simulator process will be **killed immediately**
+   - You should **never** see "ATTACK SUCCESSFUL" in the simulator output
+
+### What the Simulator Does
+
+The `ransomware_sim.py` script:
+- Opens the bait file
+- Writes malicious content to it
+- **Holds the file open for 10 seconds** (simulating encryption time)
+- This gives the Canary time to detect and terminate it
+
+This accurately simulates real ransomware behavior, unlike text editors that close files too quickly.
+
+## 📦 Creating GitHub Releases
+
+### For Maintainers/Developers
+
+To create a new release for distribution:
+
+1. **Build the binaries:**
+   ```bash
+   # Linux
+   ./venv/bin/pyinstaller --onefile --windowed \
+     --name="RansomwareCanary" \
+     --hidden-import=pystray --hidden-import=PIL \
+     --add-data "icons:icons" \
+     main_gui.py
+   
+   # Windows (on Windows machine or with Wine)
+   pyinstaller --onefile --windowed \
+     --name="RansomwareCanary" \
+     --icon="icons/shield.ico" \
+     --hidden-import=pystray --hidden-import=PIL \
+     --add-data "icons;icons" \
+     main_gui.py
+   ```
+
+2. **Prepare release packages:**
+   ```bash
+   ./prepare_release.sh v1.0.0
+   ```
+   This creates release packages in `release_v1.0.0/` folder.
+
+3. **Create GitHub Release:**
+   - Go to: https://github.com/Prince-Japheth/RansomwareCanary/releases/new
+   - Tag: `v1.0.0` (must match version in script)
+   - Title: `Release v1.0.0`
+   - Upload all `.zip` files from `release_v1.0.0/`
+   - Copy release notes from `RELEASE_NOTES_TEMPLATE.md`
+   - Publish release
+
+Users can then download directly from the Releases page!
+
+**Creating Source Code Submission Package:**
+```bash
+# From parent directory
+cd ~/Desktop
+zip -r RansomwareCanary_Source.zip RansomwareCanary \
+  -x "RansomwareCanary/venv/*" \
+  -x "RansomwareCanary/__pycache__/*" \
+  -x "RansomwareCanary/logs/*" \
+  -x "RansomwareCanary/dist/*" \
+  -x "RansomwareCanary/build/*" \
+  -x "RansomwareCanary/*.pyc" \
+  -x "RansomwareCanary/*.spec"
+```
+
+## 📁 Project Structure
+
+```
+RansomwareCanary/
+├── main.py                # Main entry point (console mode with options)
+├── main_gui.py            # GUI entry point (system tray interface)
+├── test_killswitch.py     # Quick test script (prototype)
+├── ransomware_sim.py      # Ransomware simulator for testing
+├── install_linux.sh       # One-click Linux installer
+├── HOW_TO_RUN.txt         # Instructions for lecturers/users
+├── requirements.txt        # Python dependencies
+├── README.md              # This file
+│
+├── core/
+│   ├── __init__.py
+│   ├── detector.py        # File system monitoring
+│   └── killer.py          # Process identification & termination
+│
+├── gui/
+│   ├── __init__.py
+│   └── tray.py            # System tray interface (SystemTrayApp + TrayIcon)
+│
+└── utils/
+    ├── __init__.py
+    ├── logger.py           # Logging system
+    └── bait_gen.py         # Bait file generation
+```
+
+## 🔧 How It Works
+
+1. **Bait File Creation**: Creates hidden files with names that ransomware typically targets (e.g., `_backup_codes.txt`, `wallet_backup.dat`)
+
+2. **File System Monitoring**: Uses the `watchdog` library to monitor file system events in real-time using OS-level APIs (inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows)
+
+3. **Threat Detection**: When a bait file is modified, created, deleted, or moved, the system immediately identifies the responsible process
+
+4. **Process Identification**: Uses `psutil` to scan all running processes and find which one has the bait file open
+
+5. **Active Defense**: Terminates the malicious process immediately using `process.kill()`
+
+6. **Logging & Alerting**: Logs all events and updates the GUI status
+
+## ⚠️ Important Notes
+
+- **Permissions**: This tool requires root/administrator privileges to kill processes
+- **False Positives**: Be careful not to modify bait files yourself—your editor will be killed!
+- **macOS**: May require manual permission grants in System Settings > Privacy & Security
+- **Windows**: May trigger Windows Defender warnings (whitelist the folder for development)
+- **Linux System Tray**: On Ubuntu/Gnome, use **Left-Click** (not Right-Click) to open the menu
+
+## 🎓 The "Internship" Angle
+
+When presenting this project:
+
+> "This is a **Zero-Infrastructure Endpoint Protection Agent** that provides active defense against ransomware. Unlike passive monitoring tools, it doesn't just detect threats—it neutralizes them in real-time. Perfect for environments without cloud infrastructure or network connectivity."
+
+## 📝 License
+
+This project is provided as-is for educational and demonstration purposes.
+
+## ⚠️ Disclaimer
+
+This software is a **Practical Skill Assessment (PSA) Project** developed for educational and defensive purposes. While effective against many ransomware strains, no security tool is 100% invulnerable. The developer assumes no liability for data loss.
+
+## 🤝 Contributing
+
+This is a demonstration project. Feel free to fork and enhance!
+
+---
+
+**Built with**: Python, watchdog, psutil, pystray/PIL
+
+**Platform Support**: Linux ⭐⭐⭐ | Windows ⭐⭐⭐ | macOS ⭐⭐

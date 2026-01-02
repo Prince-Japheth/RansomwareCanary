@@ -1,0 +1,100 @@
+INSTRUCTIONS FOR LECTURERS / USERS
+===================================
+
+Prerequisites:
+- Python 3.8 or higher installed.
+
+==========================================
+WINDOWS INSTRUCTIONS
+==========================================
+
+OPTION 1: Using Pre-built Executable (Recommended)
+----------------------------------------------------
+1. Run the installer: Double-click install_windows.bat (as Administrator)
+   OR manually: Double-click RansomwareCanary.exe
+2. Look for the green shield icon in system tray (bottom-right corner)
+3. Protection starts automatically - no need to click "Start"
+4. To test: Open Command Prompt and run: python ransomware_sim.py
+
+OPTION 2: Running from Source
+------------------------------
+1. Open Command Prompt inside this folder (Shift + Right-click → "Open PowerShell here")
+2. Install dependencies:
+   pip install -r requirements.txt
+3. Run the App (Run as Administrator to allow process termination):
+   python main_gui.py
+4. Protection starts automatically - green shield icon appears in system tray
+5. To Test:
+   Open another terminal and run: python ransomware_sim.py
+
+Auto-Start Setup (Windows):
+- Use the installer: Run install_windows.bat as Administrator
+- OR manually: Press Win + R, type: shell:startup
+  Copy a shortcut to RansomwareCanary.exe into that folder
+  Right-click shortcut → Properties → Compatibility → Check "Run as administrator"
+
+==========================================
+LINUX INSTRUCTIONS
+==========================================
+
+OPTION 1: One-Click Installation (Recommended)
+-----------------------------------------------
+1. Open Terminal inside this folder
+2. Run the installer:
+   sudo bash install_linux.sh
+3. Reboot your computer
+4. The app will auto-start on boot (look for green shield icon in system tray)
+5. Protection is active immediately - no manual start needed
+
+OPTION 2: Manual Setup
+-----------------------
+1. Open Terminal inside this folder
+2. Create virtual environment (optional but recommended):
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+3. Install System Tray support (if missing):
+   sudo apt install libayatana-appindicator3-dev
+4. Run the App (Sudo required for Active Defense):
+   sudo ./venv/bin/python3 main_gui.py
+   OR
+   sudo python3 main_gui.py
+5. To Test:
+   Open another terminal and run: python3 ransomware_sim.py
+
+Note: On Ubuntu/Gnome, use LEFT-CLICK (not right-click) to open the system tray menu.
+
+==========================================
+TESTING THE SYSTEM
+==========================================
+
+IMPORTANT: Do NOT test with a text editor. Text editors close files too quickly.
+
+Use the ransomware simulator instead:
+1. Start the Canary (see instructions above)
+2. Protection starts automatically (green shield icon = active)
+3. In a separate terminal, run: python3 ransomware_sim.py (Linux) or python ransomware_sim.py (Windows)
+4. The simulator should be terminated immediately
+5. Check the Canary terminal/logs to see "THREAT NEUTRALIZED"
+
+==========================================
+TROUBLESHOOTING
+==========================================
+
+Linux:
+- If system tray icon doesn't appear: sudo apt install libayatana-appindicator3-dev
+- If "Permission denied" when killing: Make sure you ran with sudo
+- If wrong directory monitored: Check that SUDO_USER environment variable is set
+
+Windows:
+- If Windows Defender blocks it: Add the folder to exclusions
+- If "Access Denied": Run Command Prompt as Administrator
+- If icon doesn't appear: Check system tray settings (may be hidden)
+
+==========================================
+SUPPORT
+==========================================
+
+This is a Practical Skill Assessment (PSA) project for educational purposes.
+For questions or issues, refer to the README.md file.
+
