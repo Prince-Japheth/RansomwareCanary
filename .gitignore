@@ -21,6 +21,7 @@ _backup_codes.txt
 # --- Distribution & Build Files ---
 *.zip
 build/
+release_*/
 
 # --- Dist folder (binaries) - Ignored by default, but can be force-added if needed
 # NOTE: For academic submission, binaries are force-added using: git add -f dist/
