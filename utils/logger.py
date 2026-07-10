@@ -18,14 +18,23 @@ class ThreatLogger:
         log_file = self.log_dir / f"canary_{datetime.now().strftime('%Y%m%d')}.log"
         
         # Configure logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(log_file),
-                logging.StreamHandler()
-            ]
-        )
+        # Configure logging - explicitly add handler since basicConfig ignores if already configured
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.INFO)
+        
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        
+        # Add file handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        root_logger.addHandler(file_handler)
+        
+        # Ensure console handler exists
+        has_console = any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers)
+        if not has_console:
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            root_logger.addHandler(console_handler)
         
         self.logger = logging.getLogger(__name__)
     
